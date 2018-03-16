@@ -1,0 +1,195 @@
+@import 'nib'
+
+green = lightgreen
+darkred = red
+$W = 755
+$H = 400
+body
+    font-family 'VT323', monospace
+    // font-family 'Share Tech Mono', monospace
+.wrapper
+    display grid
+    grid-template-rows 1fr
+    grid-template-columns 1fr
+    grid-template-areas "a"
+    width $W px
+    height $H px
+    position relative
+    // background-blend-mode soft-light
+    &:after
+        display block
+        pointer-events none
+        grid-area a
+        width 100%
+        height 100%
+        content ''
+        animation white-noise 550ms linear infinite
+        opacity 0.35
+        border-radius 5px
+        background-blend-mode hard-light
+        background url(/img/White-noise-mv255-240x180.png) repeat, 
+                radial-gradient(
+                    circle at center,
+                    darkred 50%,
+                    crimson,
+                    blue
+                );
+.interface
+    pointer-events none
+    grid-area a
+    display grid
+    grid-template-columns 1fr
+    grid-template-rows 1fr
+    grid-template-areas "interface"
+    mix-blend-mode difference
+    color green
+    font-size 3rem
+    align-self center
+    justify-self center
+    // padding 2px 0
+    // margin 0
+    width: 100%;
+    height: 100%;
+    font-weight bold
+    pointer-events none
+.video
+    cursor pointer
+    grid-area a
+    border-radius 5px
+    width 100%
+    height 100%
+.motion
+    // width 38px
+    // height 28px
+    pointer-events none
+    margin 1px
+    display block
+    box-sizing border-box
+    grid-area a
+    position absolute
+    &_detected
+        // border 2px solid yellow
+        animation motion-border 1s linear
+
+@keyframes motion-border
+    from
+        border 2px solid yellow
+    to
+        border none
+
+
+@keyframes white-noise
+    0% 
+        background-position top left
+    25%
+        background-position center right
+    50%
+        background-position bottom left
+    75%
+        background-position bottom right
+    100%
+        background-position top left
+
+random(from, to)
+    return math(math(0, 'random') * (to - from) + from, 'floor') * 1%
+max(v1, v2)
+    if v1 > v2
+        return v1
+    else
+        return v2
+min(v1, v2)
+    if v1 < v2
+        return v1
+    else
+        return v2
+
+get(arr, n, i)
+    return arr[n * 2 + i]
+
+r1 = ()
+r2 = ()
+for i in 0..10
+    // вычисляем границы клип-полигона для первого элемента
+    val1 = random(0, 100)
+    val2 = random(0, 100)
+    start = min(val1, val2)
+    finish = max(val1, val2)
+    push(r1, start, finish)
+    // для второго
+    if math(0, 'random') < 0.5
+        val1 = random(0, start)
+        val2 = random(0, start)
+    else
+        val1 = random(finish, 100)
+        val2 = random(finish, 100)
+    push(r2, min(val1, val2), max(val1, val2))
+
+restPolygon(_p1start, _p1finish, _p2start, _p2finish) // функция для формирования клип-полигона, занимающего все оставшееся место
+    p1start = min(_p1start, _p2start)
+    p1finish = min(_p1finish, _p2finish)
+    p2start = max(_p1start, _p2start)
+    p2finish = max(_p1finish, _p2finish)
+    return polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 p2finish, 100% p2finish, 100% p2start, 0 p2start, 0 p1finish, 100% p1finish, 100% p1start, 0 p1start)
+
+for j in 1..20
+    @keyframes glitch-anim-{j}
+        for i in 0...10
+            {10% * i}
+                val1 = random(0, 100) * 1%
+                val2 = random(0, 100) * 1%
+                clip-path polygon(0 val1, 0 val2, 100% val2, 100% val1)
+
+// @keyframes glitch-anim-1
+//     for i in 0...10
+//         {10% * i}
+//             // clip-path polygon(0 get(r1, i, 0), 0 get(r1, i, 1), 100% get(r1, i, 1), 100% get(r1, i, 0))
+//             val1 = random(0, 100) * 1%
+//             val2 = random(0, 100) * 1%
+//             clip-path polygon(0 val1, 0 val2, 100% val2, 100% val1)
+// @keyframes glitch-anim-2
+//     for i in 0...10
+//         {10% * i}
+//             // clip-path polygon(0 get(r2, i, 0), 0 get(r2, i, 1), 100% get(r2, i, 1), 100% get(r2, i, 0))
+//             val1 = random(0, 100) * 1%
+//             val2 = random(0, 100) * 1%
+//             clip-path polygon(0 val1, 0 val2, 100% val2, 100% val1)
+// @keyframes glitch-anim
+//     for i in 0...10
+//         {10% * i}
+//             val = random(0, 100) * 1%
+//             size = 1%
+//             clip-path polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 val + size, 100% val + size, 100% val, 0 val)
+//             // clip-path restPolygon(get(r1, i, 0), get(r1, i, 1), get(r2, i, 0), get(r2, i, 1))
+//         {10% * i + .5%}
+//             clip-path unset
+
+
+.glitch
+    position relative
+    margin 0 2px
+    grid-area interface
+    align-self: center
+    justify-self: center
+    // top 0
+    // left 0
+    // background #000
+    animation glitch-anim 10s infinite linear alternate-reverse
+    // clip-path restPolygon(get(r1, 0, 0), get(r1, 0, 1), get(r2, 0, 0), get(r2, 0, 1))
+    &:before, &:after
+        content attr(data-text)
+        position absolute
+        top 0
+        left 0
+        width 100%
+        height 100%
+        background black
+    &:before
+        left 2px
+        text-shadow -1px 0 red
+        animation glitch-anim-5 1.5s infinite step-start alternate-reverse
+        // clip-path polygon(0 get(r1, 0, 0), 0 get(r1, 0, 1), 100% get(r1, 0, 1), 100% get(r1, 0, 0))
+    &:after
+        left -2px
+        text-shadow -1px 0 blue
+        animation glitch-anim-6 1.5s infinite step-start alternate-reverse
+        // clip-path polygon(0 get(r2, 0, 0), 0 get(r2, 0, 1), 100% get(r2, 0, 1), 100% get(r2, 0, 0))

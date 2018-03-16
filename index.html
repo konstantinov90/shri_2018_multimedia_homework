@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://fonts.googleapis.com/css?family=Share+Tech+Mono|VT323" rel="stylesheet"> 
+    <link href="css/build/style.css" rel="stylesheet"> 
+    <title>Multimedia homework</title>
+</head>
+<body>
+    <div class="wrapper">
+        <video class="video" loop="loop"
+            src="img/aBx3pbP_460sv.mp4" type="video/mp4" controls="true"
+            poster="https://source.unsplash.com/random/600x400"
+        ></video>
+        <div class="interface">
+            <p class="glitch">Fuck you asshole</p>
+        </div>
+        <!-- <div class="motion"></div> -->
+    </div>
+    <!-- <canvas class="canvas"></canvas> -->
+</body>
+<script src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/641/web-animations-next.min.js"></script>
+<script>
+
+function comparePixel(p1, p2) {
+	var matches = true;
+	var sensitivity = 40;
+ 
+	for(var i = 0; i < p1.length; i++) {
+		var t1 = Math.round(p1[i]/10)*10;
+		var t2 = Math.round(p2[i]/10)*10;
+ 
+		if(t1 != t2) {
+			if((t1+sensitivity < t2 || t1-sensitivity > t2)) {
+				matches = false;
+			}
+		}
+	}
+ 
+	return matches;
+}
+
+function getImageScore(imageData) {
+    var imageScore = 0;
+
+    for (var i = 0; i < imageData.data.length; i += 4) {
+        var r = imageData.data[i] / 3;
+        var g = imageData.data[i + 1] / 3;
+        var b = imageData.data[i + 2] / 3;
+        var pixelScore = r + g + b;
+        
+        if (pixelScore >= 50) {
+            imageScore++;
+        }
+    }
+    return imageScore;
+}
+
+function saturateGreen(imageData) {
+    for (var i = 0; i < imageData.data.length; i += 4) {
+        imageData.data[i] = 0;
+        imageData.data[i + 1] = Math.min(imageData.data[i + 1]*4, 255);
+        imageData.data[i + 2] = 0;
+    }
+    return imageData;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const glitch = this.querySelector('.glitch');
+    glitch.dataset.text = glitch.innerHTML
+});
+
+const canvas = document.createElement('canvas');
+const helperCanvas = document.createElement('canvas')
+const wrapper = document.querySelector('.wrapper');
+
+class Patch  {
+    constructor(x, y, width, height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.el = null;
+    }
+    createElement() {
+        this.el = document.createElement('div');
+        this.el.classList.add('motion');
+        this.el.style.left = `${this.x}px`;
+        this.el.style.width = `${this.width-2}px`;
+        this.el.style.height = `${this.height-2}px`;
+        this.el.style.top = `${this.y}px`;
+        wrapper.appendChild(this.el);
+        this.animation = new Animation(new KeyframeEffect(
+            this.el, [
+                { border: '1px solid yellow' }, { border: 'none' }
+            ], { duration: 2000 }), document.timeline);
+    }
+    motionDetected() {
+        this.animation.finish();
+        this.animation.play();
+    }
+
+}
+
+const patches = [];
+    
+canvas.width = 755;
+canvas.height = 400;
+helperCanvas.width = 30;
+helperCanvas.height = 40;
+
+for (let x = 0; x < canvas.width; x+=helperCanvas.width){
+    for (let y = 0; y < canvas.height; y+=helperCanvas.height){
+        const patch = new Patch(x, y, helperCanvas.width, helperCanvas.height);
+        patch.createElement();
+        patches.push(patch);
+    }
+}
+console.log('patches: ', patches.length)
+
+document.querySelector('.video').addEventListener('play', function() {
+
+    const ctx = canvas.getContext('2d');
+    const helperCtx = helperCanvas.getContext('2d');
+    
+    let prevCtx;
+
+    const drawInterval = setInterval(() => {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.drawImage(this, 0, 0, canvas.width, canvas.height);
+        setTimeout(() => {
+            ctx.globalCompositeOperation = 'difference';
+            ctx.drawImage(this, 0, 0, canvas.width, canvas.height);
+            patches.map(patch => {
+                const imgData = ctx.getImageData(patch.x, patch.y, patch.width, patch.height);
+                const imageScore = getImageScore(imgData);
+                if (imageScore > 50) {
+                    patch.motionDetected();
+                    // helperCtx.putImageData(saturateGreen(imgData), 0, 0);
+                    // const img = new Image();
+                    // img.src = helperCanvas.toDataURL('data:image/png');
+                    // img.width = helperCanvas.width;
+                    // document.querySelector('body').appendChild(img);
+                }
+            })
+
+
+        }, 100)
+    }, 1000)
+});
+
+</script>
+
+</html>
