@@ -2,10 +2,11 @@
 
 green = lightgreen
 darkred = red
-$W = 755
-$H = 400
+$W = 800
+$H = 600
 body
     font-family 'VT323', monospace
+    transform translateZ(0)
     // font-family 'Share Tech Mono', monospace
 .wrapper
     display grid
@@ -15,7 +16,6 @@ body
     width $W px
     height $H px
     position relative
-    // background-blend-mode soft-light
     &:after
         display block
         pointer-events none
@@ -61,22 +61,20 @@ body
 .motion
     // width 38px
     // height 28px
-    pointer-events none
+    // pointer-events none
     margin 1px
     display block
     box-sizing border-box
     grid-area a
     position absolute
-    &_detected
-        // border 2px solid yellow
-        animation motion-border 1s linear
-
-@keyframes motion-border
-    from
-        border 2px solid yellow
-    to
-        border none
-
+.canvas
+    mix-blend-mode difference
+    grid-area a
+    position absolute
+    bottom 0px
+    left 0px
+    height 200px
+    width 100%
 
 @keyframes white-noise
     0% 
