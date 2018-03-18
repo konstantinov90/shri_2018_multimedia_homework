@@ -11,340 +11,36 @@
 <body>
     <div class="wrapper">
         <video class="video" loop="loop" width="400px"
-            src="img/aBx3pbP_460sv.mp4" autoplay controls
         ></video>
-        <canvas class="video-overlay"></canvas>
+        <!-- src="img/aBx3pbP_460sv.mp4" autoplay controls -->
+        <canvas class="video__overlay"></canvas>
             <!--poster="https://source.unsplash.com/random/600x400"-->
         <div class="interface">
-            <p class="interface-answer glitch">Hello everyone</p>
-            <div class="interface-aux">
-                <p data-text="Lorem ipsum dolor, sit amet consectetur adipisicing elit. Vitae dignissimos, doloremque laborum, quod ullam autem quas praesentium quisquam, at voluptatibus est harum sit dolorem "></p>
+            <div class="interface__aux">
+                <p data-text="Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatem similique asperiores quos! Explicabo et quasi officiis nihil voluptas doloribus, quisquam, veritatis, laudantium repudiandae consectetur quae mollitia itaque impedit quam voluptatibus?
+                Corrupti quis aut officia dicta ad quaerat culpa architecto. Tempore odio adipisci ipsum vel facilis. Illo, aut nihil atque incidunt beatae officia nemo ad dignissimos, mollitia labore debitis corporis eius.
+                Commodi facilis id nemo cum itaque nihil? Accusantium eveniet enim beatae quas veniam eos, eum delectus ab deserunt esse adipisci minus! Sunt incidunt ipsa aut! Voluptatibus vero sequi ut ea.
+                Recusandae eum illum obcaecati quod necessitatibus soluta, suscipit ratione, quibusdam nesciunt alias ipsum labore ducimus, voluptate consequuntur velit molestias numquam nobis repellat mollitia modi. Accusamus doloribus earum aperiam delectus perspiciatis!
+                Soluta, beatae tempora veritatis vero ab aperiam accusantium delectus, laborum eveniet aut dolorem sit laudantium suscipit at possimus officia maiores enim fugiat. Perspiciatis laboriosam iusto a, alias vero repudiandae et!
+                Enim recusandae maxime autem consequuntur consequatur repellendus ut sapiente laudantium pariatur corporis eum optio qui ab laboriosam nam, esse aliquid suscipit minus nihil quo. Magnam adipisci eveniet illo voluptatem tempore!
+                Quo corporis dolor, cumque sint iure officia vel provident optio exercitationem ea culpa blanditiis esse rem eaque ipsum aliquid recusandae velit! Nisi, inventore. Cupiditate voluptates maxime, vitae facilis et quasi!
+                Tempore, blanditiis asperiores iusto dolor accusantium veniam dignissimos obcaecati error deleniti quibusdam dolore ab velit magni nostrum corrupti eum consequuntur nihil? Consequatur nesciunt ea excepturi! Aliquam deserunt minus quis voluptates!
+                Praesentium, quo? Laboriosam beatae officiis culpa pariatur adipisci voluptatem, quia sequi odio consectetur, perferendis nesciunt voluptatibus, dolorum quaerat recusandae. Ullam reprehenderit aliquid neque, vitae asperiores vel nemo fugiat sequi quisquam!
+                Perferendis ullam vitae provident odit, id explicabo incidunt tenetur quod iure soluta deserunt perspiciatis reprehenderit, dolor doloremque aut esse labore ab voluptas harum laboriosam fuga? Reprehenderit minima nihil nulla incidunt?"></p>
+            </div>
+            <p class="interface__motion-detected glitch glitch-6" data-text="motion detected"></p>
+            <div class="interface__answers">
+                <p class="interface__answer interface__answer_discarded glitch glitch-1" data-text="good day to you, sir"></p>
+                <p class="interface__answer interface__answer_discarded glitch glitch-2" data-text="I want candy!"></p>
+                <p class="interface__answer interface__answer_discarded glitch glitch-3" data-text="sorry won't happen again"></p>
+                <p class="interface__answer interface__answer_discarded glitch glitch-4" data-text="fuck you"></p>
+                <p class="interface__answer interface__answer_discarded glitch glitch-5" data-text="fuck you, asshole"></p>
             </div>
         </div>
-        <div class="motion-frame"></div>
-        <canvas class="canvas"></canvas>
+        <canvas class="sound-wave-canvas"></canvas>
     </div>
 </body>
 <script src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/641/web-animations-next.min.js"></script>
-<script>
-
-const interfaceAuxP = document.querySelector('.interface-aux').querySelector('p');
-const letters = interfaceAuxP.dataset.text.split('');
-function insertLetter(child) {
-    const letter = letters.shift();
-    if (!letter) return;
-    if (letter === ' ' || !child) {
-        child = document.createElement('span');
-        child.classList.add('glitch-2')
-        interfaceAuxP.appendChild(child);
-    }
-    child.innerHTML += letter;
-    requestAnimationFrame(()=>insertLetter(child));
-}
-requestAnimationFrame(insertLetter);
-
-window.AudioContext = window.AudioContext || window.webkitAudioContext;
-const audioContext = new AudioContext();
-
-const constraints = {
-    video: true,
-    audio: true
-};
-
-const video = document.querySelector('.video');
-
-function drawBuffer( width, height, context, data ) {
-    var step = Math.ceil( data.length / width );
-    var amp = height / 2;
-    context.fillStyle = "silver";
-    context.clearRect(0,0,width,height);
-    for(var i=0; i < width; i++){
-        var min = 1.0;
-        var max = -1.0;
-        for (j=0; j<step; j++) {
-            var datum = data[(i*step)+j]; 
-            if (datum < min)
-                min = datum;
-            if (datum > max)
-                max = datum;
-        }
-        context.fillRect(i,(1+min)*amp,1,Math.max(1,(max-min)*amp));
-    }
-}
-
-
-function handleSuccess(stream) {
-    console.log(stream)
-    video.srcObject = stream;
-    const audioInput = audioContext.createMediaStreamSource(stream);
-    const inputNode = audioContext.createGain();
-    inputNode.gain.value = 2;
-    audioInput.connect(inputNode);
-    const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 2048;
-    inputNode.connect(analyser);
-    // analyser.connect(audioContext.destination);
-    const dataArray = new Uint8Array(analyser.fftSize); // Uint8Array should be the same length as the fftSize 
-    // drawBuffer(200, 100, document.querySelector('.canvas').getContext('2d'), dataArray);
-    const myCanvas = document.querySelector('.canvas').getContext('2d')
-    WIDTH = 800;
-    HEIGHT = 150;
-    bufferLength = 2048;
-    myCanvas.clearRect(0, 0, WIDTH, HEIGHT);
-
-    function draw() {
-        drawVisual = requestAnimationFrame(draw);
-        analyser.getByteTimeDomainData(dataArray);
-        
-        myCanvas.fillRect(0, 0, WIDTH, HEIGHT);
-        myCanvas.lineWidth = 4;
-        myCanvas.strokeStyle = 'lightgreen';
-
-        myCanvas.beginPath();
-        var sliceWidth = WIDTH * 1.0 / bufferLength;
-        var x = 0;
-        
-        for(var i = 0; i < bufferLength; i++) {
-    
-            var v = dataArray[i] / 128.0;
-            var y = (v-1)*30 + HEIGHT/2;
-
-            if(i === 0) {
-            myCanvas.moveTo(x, y);
-            } else {
-            myCanvas.lineTo(x, y);
-            }
-
-            x += sliceWidth;
-        };
-    
-        myCanvas.lineTo(canvas.width, canvas.height/2);
-        myCanvas.stroke();
-        };
-
-    draw();
-
-}
-
-function handleError(error) {
-  console.error('Reeeejected!', error);
-}
-
-navigator.mediaDevices.getUserMedia(constraints).
-  then(handleSuccess).catch(handleError);
-
-function comparePixel(p1, p2) {
-	var matches = true;
-	var sensitivity = 40;
- 
-	for(var i = 0; i < p1.length; i++) {
-		var t1 = Math.round(p1[i]/10)*10;
-		var t2 = Math.round(p2[i]/10)*10;
- 
-		if(t1 != t2) {
-			if((t1+sensitivity < t2 || t1-sensitivity > t2)) {
-				matches = false;
-			}
-		}
-	}
- 
-	return matches;
-}
-
-function saturateGreen(imageData) {
-    for (var i = 0; i < imageData.data.length; i += 4) {
-        imageData.data[i] = 0;
-        imageData.data[i + 1] = Math.min(imageData.data[i + 1]*4, 255);
-        imageData.data[i + 2] = 0;
-        imageData.data[i + 3] = imageData.data[i + 1] > 50? 255: 0;
-    }
-    return imageData;
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const glitch = this.querySelector('.glitch');
-    glitch.dataset.text = glitch.innerHTML
-});
-
-const canvas = document.createElement('canvas');
-// document.querySelector('.wrapper').appendChild(canvas)
-// const canvas = document.querySelector('.canvas');
-
-
-    function getImageScore(imageData) {
-        let imageScore = 0;
-
-        for (let i = 0; i < imageData.data.length; i += 4) {
-            const r = imageData.data[i] / 3;
-            const g = imageData.data[i+1] / 3;
-            const b = imageData.data[i + 2] / 3;
-            const pixelScore = r + g + b;
-            
-            if (pixelScore > 20) {
-                imageScore++;
-            }
-        }
-        return imageScore;
-    }
-
-let _patchesCount = 0;
-let _currentPatchesCount = 0;
-class Patch  {
-    constructor(x, y, width, height, ctx) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.el = null;
-        this.ctx = ctx;
-        _patchesCount++;
-    }
-    static get patchesCount() {
-        return _patchesCount;
-    }
-    static set currentCount(val) {
-        _currentPatchesCount = val;
-    }
-    static get currentCount() {
-        return _currentPatchesCount;
-    }
-    getImageScore() {
-        const imageData = saturateGreen(this.ctx.getImageData(this.x, this.y, this.width, this.height));
-        let imageScore = 0;
-
-        for (let i = 1; i < imageData.data.length; i += 4) {
-            // const r = imageData.data[i] / 3;
-            const g = imageData.data[i];
-            // const b = imageData.data[i + 2] / 3;
-            // const pixelScore = r + g + b;
-            
-            if (g >= 215) {
-                imageScore++;
-            }
-        }
-        return imageScore;
-    }
-    createElement(parent) {
-        this.el = document.createElement('div');
-        this.el.classList.add('motion-cell');
-        this.el.style.left = `${this.x}px`;
-        this.el.style.width = `${this.width-2}px`;
-        this.el.style.height = `${this.height-2}px`;
-        this.el.style.top = `${this.y}px`;
-        this.el.addEventListener('motionEvent',(e)=>this.watch(e))
-        parent.appendChild(this.el);
-        this.animation = new Animation(new KeyframeEffect(
-            this.el, [
-                { border: '1px solid yellow' }, { border: '0px' }
-            ], { duration: 2000 }), document.timeline);
-    }
-    watch(e) {
-        setTimeout(() => {
-            this.motionDetected();
-        }, 0);
-    }
-    motionDetected() {
-        if (this.getImageScore() > 50) {
-            requestAnimationFrame(()=>{
-                // this.animation.finish();
-                // this.animation.play();
-            });
-        }
-        Patch.currentCount = Patch.currentCount + 1;
-        if (Patch.currentCount === Patch.patchesCount) {
-            video.dispatchEvent(imageProcessedEvent)
-            Patch.currentCount = 0;
-        }
-    }
-}
-
-
-const patches = [];
-    
-canvas.width = 800;
-canvas.height = 600;
-const [w,h] = [40,30]
-const ctx = canvas.getContext('2d');
-const motionFrame = document.querySelector('.motion-frame');
-
-for (let x = 0; x < canvas.width; x+=w){
-    for (let y = 0; y < canvas.height; y+=h){
-        const patch = new Patch(x, y, w, h, ctx);
-        patch.createElement(motionFrame);
-        patches.push(patch);
-    }
-}
-const event = new CustomEvent('motionEvent');
-const imageProcessedEvent = new CustomEvent('imageProcessed');
-// event.initEvent('motion', true, true);
-
-const helperCanvas = document.createElement('canvas');
-helperCanvas.width = canvas.width;
-helperCanvas.height = canvas.height;
-helperCanvas.style.background = 'darkred'
-const helperCtx = helperCanvas.getContext('2d');
-
-// video.addEventListener('canplaythrough', function() {
-    
-    video.addEventListener('imageProcessed', () => {
-        processImage(video);
-    })
-
-setTimeout(()=>{
-    // processImage(video);
-
-},1100)
-    // });
-    
-
-const overlay = document.querySelector('.video-overlay');
-overlay.width = canvas.width;
-overlay.height = canvas.height;
-const overlayCtx = overlay.getContext('2d');
-// overlayCtx.globalCompositeOperation = 'source-over';
-// const body = document.querySelector('body').appendChild(helperCanvas);
-
-function processImage(video) {
-    // console.log(new Date())
-    setTimeout(() => {
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        setTimeout(() => {
-            ctx.globalCompositeOperation = 'difference';
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            imgData = saturateGreen(ctx.getImageData(0, 0, canvas.width, canvas.height));
-            // if (getImageScore(imgData) > 10) {
-                oldImgData = overlayCtx.getImageData(0, 0, canvas.width, canvas.height);
-                overlayCtx.putImageData(sumImageDatas(multiplyImageData(oldImgData, 0.94), imgData), 0, 0)
-                // helperCtx.globalCompositeOperation = 'copy';
-                helperCtx.putImageData(sumImageDatas(multiplyImageData(oldImgData, 0.85), imgData), 0, 0)
-                // setTime
-                // console.log(getImageScore(imgData))
-            // }
-            // ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            // patches.map(patch => patch.el.dispatchEvent(event));
-            video.dispatchEvent(imageProcessedEvent)
-        },20);
-    },20);
-}
-
-function multiplyImageData(imageData, multiplier) {
-    for (let i = 0; i < imageData.data.length; i++) {
-        imageData.data[i] *= multiplier
-    }
-    return imageData;
-}
-function sumImageDatas(imageData1, imageData2) {
-    if (imageData1.data.length !== imageData2.data.length) {
-        throw new Error('imageDatas sizes uneven');
-        alert('Ты что-то делаешь не так');
-    }
-    for (let i = 0; i < imageData1.data.length; i++) {
-        imageData1.data[i] = Math.min(imageData1.data[i] + imageData2.data[i], 255);
-    }
-    return imageData1;
-}
-
-</script>
+<script src="js/script.js"></script>
 
 </html>
