@@ -1,12 +1,14 @@
 @import 'nib'
 
-green = lightgreen
-darkred = red
+$textcolor = lightgreen //#ef5771
+// green = lightgreen
+// darkred = red
 $W = 800
-$H = 600
+$H = 600 //455
 body
     font-family 'VT323', monospace
     transform translateZ(0)
+    color $textcolor
     // font-family 'Share Tech Mono', monospace
 .wrapper
     display grid
@@ -24,25 +26,42 @@ body
         height 100%
         content ''
         animation white-noise 550ms linear infinite
-        opacity 0.35
+        opacity 0.25
         border-radius 5px
         background-blend-mode hard-light
         background url(../../img/White-noise-mv255-240x180.png) repeat, 
                 radial-gradient(
                     circle at center,
-                    darkred 50%,
-                    crimson,
+                    darkred,
+                    red,
                     blue
                 );
+
+@keyframes flicker
+    0%
+        max-height 2rem
+    5%
+        max-height 0
+    10%
+        max-height 2rem
+    15%
+        max-height 0
+    20%
+        max-height 2rem
+    25%
+        max-height 0
+    99%
+        max-height 100%
+    100%
+        max-height 0
+
 .interface
-    pointer-events none
     grid-area a
     display grid
     grid-template-columns 1fr
     grid-template-rows 1fr
     grid-template-areas "interface"
     mix-blend-mode difference
-    color green
     font-size 3rem
     align-self center
     justify-self center
@@ -51,30 +70,95 @@ body
     width: 100%;
     height: 100%;
     font-weight bold
-    pointer-events none
+    & > *
+        grid-area interface
+    // pointer-events none
+    &__answers
+        align-self center
+        justify-self center
+        display flex
+        flex-direction column
+        justify-content center
+        align-items center
+
+    &__answer
+        $transitionDuration = 200ms
+
+        margin 0
+        max-height 3rem
+        font-size 3rem
+        transition max-height $transitionDuration linear, font-size $transitionDuration linear
+        &_selected
+            font-size 4rem
+            padding 0
+        &_discarded
+            max-height 0
+            overflow hidden
+            
+    &__motion-detected
+        overflow hidden
+        margin-top 15px
+        justify-self center
+        align-self flex-start
+        font-size 2rem
+        max-height 0
+        &_active
+            animation flicker 5s step-start normal, glitch-anim 10s infinite linear alternate-reverse !important
+ 
+    &__aux
+        width 20%
+        position absolute
+        font-size 1rem
+        margin 15px 0 0 15px
+        overflow hidden
+        height 100%
+        height calc(100% - 30px)
+        > p
+            bottom 0
+            position absolute
+            // top calc(100% - 20em)
+            // line-height: 1em
+            margin 0
+            // animation interface-aux-flight 25s linear infinite
+
+@keyframes interface-aux-flight
+    0%
+        bottom 0
+    100%
+        bottom -580%
+
+
 .video
     cursor pointer
     grid-area a
     border-radius 5px
     width 100%
     height 100%
-.motion
+    &__overlay
+        grid-area a
+        width 100%
+        height 100%
+        mix-blend-mode color-dodge
+.motion-cell
     // width 38px
     // height 28px
-    // pointer-events none
+    position absolute
+    pointer-events none
     margin 1px
     display block
     box-sizing border-box
+    position absolute
+.sound-wave-canvas
+    // mix-blend-mode difference
+    background rgba(255,255,255,0.8)
     grid-area a
     position absolute
-.canvas
-    mix-blend-mode difference
-    grid-area a
-    position absolute
-    bottom 0px
-    left 0px
-    height 200px
-    width 100%
+    top 15px
+    right 15px
+    border-radius 15px
+    height 100px
+    width 30%
+    pointer-events none
 
 @keyframes white-noise
     0% 
@@ -136,6 +220,16 @@ for j in 1..20
                 val1 = random(0, 100) * 1%
                 val2 = random(0, 100) * 1%
                 clip-path polygon(0 val1, 0 val2, 100% val2, 100% val1)
+@keyframes glitch-anim-flickering
+    for i in 0...20
+        {5% * i}
+            if i % 2 == 0
+                max-height 2rem
+                val1 = random(0, 100) * 1%
+                val2 = random(0, 100) * 1%
+                clip-path polygon(0 val1, 0 val2, 100% val2, 100% val1)
+            else
+                max-height 0
 
 // @keyframes glitch-anim-1
 //     for i in 0...10
@@ -161,33 +255,37 @@ for j in 1..20
 //         {10% * i + .5%}
 //             clip-path unset
 
+// glitch-anim(n, args)
+//     animation glitch-anim-{n} args
 
-.glitch
-    position relative
-    margin 0 2px
-    grid-area interface
-    align-self: center
-    justify-self: center
-    // top 0
-    // left 0
-    // background #000
-    animation glitch-anim 10s infinite linear alternate-reverse
-    // clip-path restPolygon(get(r1, 0, 0), get(r1, 0, 1), get(r2, 0, 0), get(r2, 0, 1))
-    &:before, &:after
-        content attr(data-text)
-        position absolute
-        top 0
-        left 0
-        width 100%
-        height 100%
-        background black
-    &:before
-        left 2px
-        text-shadow -1px 0 red
-        animation glitch-anim-5 1.5s infinite step-start alternate-reverse
-        // clip-path polygon(0 get(r1, 0, 0), 0 get(r1, 0, 1), 100% get(r1, 0, 1), 100% get(r1, 0, 0))
-    &:after
-        left -2px
-        text-shadow -1px 0 blue
-        animation glitch-anim-6 1.5s infinite step-start alternate-reverse
-        // clip-path polygon(0 get(r2, 0, 0), 0 get(r2, 0, 1), 100% get(r2, 0, 1), 100% get(r2, 0, 0))
+for i in 1..10
+    $n1 = 2 * i - 1
+    $n2 = 2 * i
+    $anim1 = glitch-anim- + $n1
+    $anim2 = glitch-anim- + $n2
+    .glitch-{i}
+        position relative
+        display inline-block
+        // margin 0 2px
+        // top 0
+        // left 0
+        background #000
+        animation glitch-anim 10s infinite linear alternate-reverse
+        // clip-path restPolygon(get(r1, 0, 0), get(r1, 0, 1), get(r2, 0, 0), get(r2, 0, 1))
+        &:before, &:after
+            content attr(data-text)
+            position absolute
+            top 0
+            left 0
+            width 100%
+            height 100%
+            background black
+        &:before
+            left 1px
+            text-shadow -2px 0 red
+            animation $anim1 1.5s infinite step-start alternate-reverse
+        &:after
+            left -1px
+            text-shadow 2px 0 blue
+            animation $anim2 1.5s infinite step-start alternate-reverse
+            // clip-path polygon(0 get(r2, 0, 0), 0 get(r2, 0, 1), 100% get(r2, 0, 1), 100% get(r2, 0, 0))
