@@ -80,7 +80,10 @@ function augmentInterfaceAux(interfaceAuxParagraph, child, letters) {
     child = child || appendGlitchySpan(interfaceAuxParagraph);
 
     const letter = letters.shift();
-    if (!letter) return;
+    if (!letter) {
+        child.dataset.text = child.innerHTML;
+        return;
+    }
     if (letter === ' ') {
         child.dataset.text = child.innerHTML;
         child = appendGlitchySpan(interfaceAuxParagraph);
