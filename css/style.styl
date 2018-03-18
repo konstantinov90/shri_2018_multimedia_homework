@@ -50,7 +50,41 @@ body
     width: 100%;
     height: 100%;
     font-weight bold
-    pointer-events none
+    // pointer-events none
+
+.interface-answer
+    align-self center
+    justify-self center
+    grid-area interface
+
+.interface-aux
+    width 20%
+    grid-area interface
+    position absolute
+    font-size 16px
+    margin 15px 0 0 15px
+    overflow hidden
+    height 100%
+    height calc(100% - 30px)
+    // mix-blend-mode difference
+
+.interface-aux > p
+    // top -30px
+    bottom 0
+    position absolute
+    mix-blend-mode difference
+    // top calc(100% - 20em)
+    // line-height: 1em
+    margin 0
+    // animation interface-aux-flight 25s linear infinite
+
+@keyframes interface-aux-flight
+    0%
+        bottom 0
+    100%
+        bottom -580%
+
+
 .video
     cursor pointer
     grid-area a
@@ -171,33 +205,37 @@ for j in 1..20
 //         {10% * i + .5%}
 //             clip-path unset
 
+// glitch-anim(n, args)
+//     animation glitch-anim-{n} args
 
-.glitch
-    position relative
-    margin 0 2px
-    grid-area interface
-    align-self center
-    justify-self center
-    // top 0
-    // left 0
-    background #000
-    animation glitch-anim 10s infinite linear alternate-reverse
-    // clip-path restPolygon(get(r1, 0, 0), get(r1, 0, 1), get(r2, 0, 0), get(r2, 0, 1))
-    &:before, &:after
-        content attr(data-text)
-        position absolute
-        top 0
-        left 0
-        width 100%
-        height 100%
-        background black
-    &:before
-        left 2px
-        text-shadow -1px 0 red
-        animation glitch-anim-5 1.5s infinite step-start alternate-reverse
-        // clip-path polygon(0 get(r1, 0, 0), 0 get(r1, 0, 1), 100% get(r1, 0, 1), 100% get(r1, 0, 0))
-    &:after
-        left -2px
-        text-shadow 1px 0 blue
-        animation glitch-anim-6 1.5s infinite step-start alternate-reverse
-        // clip-path polygon(0 get(r2, 0, 0), 0 get(r2, 0, 1), 100% get(r2, 0, 1), 100% get(r2, 0, 0))
+for i in 1..10
+    $n1 = 2 * i - 1
+    $n2 = 2 * i
+    $anim1 = glitch-anim- + $n1
+    $anim2 = glitch-anim- + $n2
+    .glitch-{i}
+        position relative
+        display inline-block
+        margin 0 2px
+        // top 0
+        // left 0
+        background #000
+        animation glitch-anim 10s infinite linear alternate-reverse
+        // clip-path restPolygon(get(r1, 0, 0), get(r1, 0, 1), get(r2, 0, 0), get(r2, 0, 1))
+        &:before, &:after
+            content attr(data-text)
+            position absolute
+            top 0
+            left 0
+            width 100%
+            height 100%
+            background black
+        &:before
+            left 2px
+            text-shadow -1px 0 red
+            animation $anim1 1.5s infinite step-start alternate-reverse
+        &:after
+            left -2px
+            text-shadow 1px 0 blue
+            animation $anim2 1.5s infinite step-start alternate-reverse
+            // clip-path polygon(0 get(r2, 0, 0), 0 get(r2, 0, 1), 100% get(r2, 0, 1), 100% get(r2, 0, 0))

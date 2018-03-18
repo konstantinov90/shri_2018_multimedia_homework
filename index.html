@@ -16,7 +16,10 @@
         <canvas class="video-overlay"></canvas>
             <!--poster="https://source.unsplash.com/random/600x400"-->
         <div class="interface">
-            <p class="glitch">Hello everyone</p>
+            <p class="interface-answer glitch">Hello everyone</p>
+            <div class="interface-aux">
+                <p data-text="Lorem ipsum dolor, sit amet consectetur adipisicing elit. Vitae dignissimos, doloremque laborum, quod ullam autem quas praesentium quisquam, at voluptatibus est harum sit dolorem "></p>
+            </div>
         </div>
         <div class="motion-frame"></div>
         <canvas class="canvas"></canvas>
@@ -24,6 +27,21 @@
 </body>
 <script src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/641/web-animations-next.min.js"></script>
 <script>
+
+const interfaceAuxP = document.querySelector('.interface-aux').querySelector('p');
+const letters = interfaceAuxP.dataset.text.split('');
+function insertLetter(child) {
+    const letter = letters.shift();
+    if (!letter) return;
+    if (letter === ' ' || !child) {
+        child = document.createElement('span');
+        child.classList.add('glitch-2')
+        interfaceAuxP.appendChild(child);
+    }
+    child.innerHTML += letter;
+    requestAnimationFrame(()=>insertLetter(child));
+}
+requestAnimationFrame(insertLetter);
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioContext = new AudioContext();
@@ -273,7 +291,7 @@ const helperCtx = helperCanvas.getContext('2d');
     })
 
 setTimeout(()=>{
-    processImage(video);
+    // processImage(video);
 
 },1100)
     // });
@@ -297,7 +315,7 @@ function processImage(video) {
             imgData = saturateGreen(ctx.getImageData(0, 0, canvas.width, canvas.height));
             // if (getImageScore(imgData) > 10) {
                 oldImgData = overlayCtx.getImageData(0, 0, canvas.width, canvas.height);
-                overlayCtx.putImageData(sumImageDatas(multiplyImageData(oldImgData, 0.99), imgData), 0, 0)
+                overlayCtx.putImageData(sumImageDatas(multiplyImageData(oldImgData, 0.94), imgData), 0, 0)
                 // helperCtx.globalCompositeOperation = 'copy';
                 helperCtx.putImageData(sumImageDatas(multiplyImageData(oldImgData, 0.85), imgData), 0, 0)
                 // setTime
