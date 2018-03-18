@@ -9,7 +9,7 @@ gulp.task('server', function() {
         server: {
             baseDir: "./"
         },
-        port: 9000
+        port: 3000
     });
     gulp.watch('css/*.styl', ['styles'])
     gulp.watch('./index.html', ['sync'])

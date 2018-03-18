@@ -10,12 +10,15 @@
 </head>
 <body>
     <div class="wrapper">
-        <video class="video" loop="loop" width="400px"></video>
+        <video class="video" loop="loop" width="400px"
+            src="img/aBx3pbP_460sv.mp4" autoplay controls
+        ></video>
+        <canvas class="video-overlay"></canvas>
             <!--poster="https://source.unsplash.com/random/600x400"-->
         <div class="interface">
             <p class="glitch">Hello everyone</p>
         </div>
-        <!-- <div class="motion"></div> -->
+        <div class="motion-frame"></div>
         <canvas class="canvas"></canvas>
     </div>
 </body>
@@ -135,6 +138,7 @@ function saturateGreen(imageData) {
         imageData.data[i] = 0;
         imageData.data[i + 1] = Math.min(imageData.data[i + 1]*4, 255);
         imageData.data[i + 2] = 0;
+        imageData.data[i + 3] = imageData.data[i + 1] > 50? 255: 0;
     }
     return imageData;
 }
@@ -145,9 +149,25 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 const canvas = document.createElement('canvas');
+// document.querySelector('.wrapper').appendChild(canvas)
 // const canvas = document.querySelector('.canvas');
-const wrapper = document.querySelector('.wrapper');
 
+
+    function getImageScore(imageData) {
+        let imageScore = 0;
+
+        for (let i = 0; i < imageData.data.length; i += 4) {
+            const r = imageData.data[i] / 3;
+            const g = imageData.data[i+1] / 3;
+            const b = imageData.data[i + 2] / 3;
+            const pixelScore = r + g + b;
+            
+            if (pixelScore > 20) {
+                imageScore++;
+            }
+        }
+        return imageScore;
+    }
 
 let _patchesCount = 0;
 let _currentPatchesCount = 0;
@@ -171,34 +191,34 @@ class Patch  {
         return _currentPatchesCount;
     }
     getImageScore() {
-        const imageData = this.ctx.getImageData(this.x, this.y, this.width, this.height);
+        const imageData = saturateGreen(this.ctx.getImageData(this.x, this.y, this.width, this.height));
         let imageScore = 0;
 
-        for (let i = 0; i < imageData.data.length; i += 4) {
-            let r = imageData.data[i] / 3;
-            let g = imageData.data[i + 1] / 3;
-            let b = imageData.data[i + 2] / 3;
-            let pixelScore = r + g + b;
+        for (let i = 1; i < imageData.data.length; i += 4) {
+            // const r = imageData.data[i] / 3;
+            const g = imageData.data[i];
+            // const b = imageData.data[i + 2] / 3;
+            // const pixelScore = r + g + b;
             
-            if (pixelScore >= 100) {
+            if (g >= 215) {
                 imageScore++;
             }
         }
         return imageScore;
     }
-    createElement() {
+    createElement(parent) {
         this.el = document.createElement('div');
-        this.el.classList.add('motion');
+        this.el.classList.add('motion-cell');
         this.el.style.left = `${this.x}px`;
         this.el.style.width = `${this.width-2}px`;
         this.el.style.height = `${this.height-2}px`;
         this.el.style.top = `${this.y}px`;
         this.el.addEventListener('motionEvent',(e)=>this.watch(e))
-        wrapper.appendChild(this.el);
+        parent.appendChild(this.el);
         this.animation = new Animation(new KeyframeEffect(
             this.el, [
                 { border: '1px solid yellow' }, { border: '0px' }
-            ], { duration: 4000, easing: 'ease-in-out' }), document.timeline);
+            ], { duration: 2000 }), document.timeline);
     }
     watch(e) {
         setTimeout(() => {
@@ -207,12 +227,14 @@ class Patch  {
     }
     motionDetected() {
         if (this.getImageScore() > 50) {
-            this.animation.finish();
-            this.animation.play();
+            requestAnimationFrame(()=>{
+                // this.animation.finish();
+                // this.animation.play();
+            });
         }
         Patch.currentCount = Patch.currentCount + 1;
         if (Patch.currentCount === Patch.patchesCount) {
-            document.querySelector('.video').dispatchEvent(imageProcessedEvent)
+            video.dispatchEvent(imageProcessedEvent)
             Patch.currentCount = 0;
         }
     }
@@ -225,11 +247,12 @@ canvas.width = 800;
 canvas.height = 600;
 const [w,h] = [40,30]
 const ctx = canvas.getContext('2d');
+const motionFrame = document.querySelector('.motion-frame');
 
 for (let x = 0; x < canvas.width; x+=w){
     for (let y = 0; y < canvas.height; y+=h){
         const patch = new Patch(x, y, w, h, ctx);
-        patch.createElement();
+        patch.createElement(motionFrame);
         patches.push(patch);
     }
 }
@@ -237,24 +260,71 @@ const event = new CustomEvent('motionEvent');
 const imageProcessedEvent = new CustomEvent('imageProcessed');
 // event.initEvent('motion', true, true);
 
-document.querySelector('.video').addEventListener('canplay', function() {
+const helperCanvas = document.createElement('canvas');
+helperCanvas.width = canvas.width;
+helperCanvas.height = canvas.height;
+helperCanvas.style.background = 'darkred'
+const helperCtx = helperCanvas.getContext('2d');
+
+// video.addEventListener('canplaythrough', function() {
     
-    this.addEventListener('imageProcessed', () => {
+    video.addEventListener('imageProcessed', () => {
         processImage(video);
     })
+
+setTimeout(()=>{
     processImage(video);
-});
+
+},1100)
+    // });
+    
+
+const overlay = document.querySelector('.video-overlay');
+overlay.width = canvas.width;
+overlay.height = canvas.height;
+const overlayCtx = overlay.getContext('2d');
+// overlayCtx.globalCompositeOperation = 'source-over';
+// const body = document.querySelector('body').appendChild(helperCanvas);
 
 function processImage(video) {
+    // console.log(new Date())
     setTimeout(() => {
         ctx.globalCompositeOperation = 'source-over';
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         setTimeout(() => {
             ctx.globalCompositeOperation = 'difference';
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            patches.map(patch => patch.el.dispatchEvent(event));
-        }, 20);
-    }, 20);
+            imgData = saturateGreen(ctx.getImageData(0, 0, canvas.width, canvas.height));
+            // if (getImageScore(imgData) > 10) {
+                oldImgData = overlayCtx.getImageData(0, 0, canvas.width, canvas.height);
+                overlayCtx.putImageData(sumImageDatas(multiplyImageData(oldImgData, 0.99), imgData), 0, 0)
+                // helperCtx.globalCompositeOperation = 'copy';
+                helperCtx.putImageData(sumImageDatas(multiplyImageData(oldImgData, 0.85), imgData), 0, 0)
+                // setTime
+                // console.log(getImageScore(imgData))
+            // }
+            // ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            // patches.map(patch => patch.el.dispatchEvent(event));
+            video.dispatchEvent(imageProcessedEvent)
+        },20);
+    },20);
+}
+
+function multiplyImageData(imageData, multiplier) {
+    for (let i = 0; i < imageData.data.length; i++) {
+        imageData.data[i] *= multiplier
+    }
+    return imageData;
+}
+function sumImageDatas(imageData1, imageData2) {
+    if (imageData1.data.length !== imageData2.data.length) {
+        throw new Error('imageDatas sizes uneven');
+        alert('Ты что-то делаешь не так');
+    }
+    for (let i = 0; i < imageData1.data.length; i++) {
+        imageData1.data[i] = Math.min(imageData1.data[i] + imageData2.data[i], 255);
+    }
+    return imageData1;
 }
 
 </script>
